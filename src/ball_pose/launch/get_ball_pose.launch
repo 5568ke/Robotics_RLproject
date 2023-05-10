@@ -1,0 +1,4 @@
+<launch>
+  <node name="ball_pose_node" pkg="ball_pose" type="get_ball_pose" output="screen">
+  </node>
+</launch>

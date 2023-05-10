@@ -1,0 +1,8 @@
+prefix=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/install
+
+Name: move_pkg
+Description: Description of move_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
