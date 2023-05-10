@@ -133,6 +133,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/gtest/cmake_install.cmake")
   include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/turtlebot3_simulations/turtlebot3_simulations/cmake_install.cmake")
   include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/ball_pose/cmake_install.cmake")
+  include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/cmake_install.cmake")
   include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/turtlebot3_simulations/turtlebot3_fake/cmake_install.cmake")
   include("/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/turtlebot3_simulations/turtlebot3_gazebo/cmake_install.cmake")
 
