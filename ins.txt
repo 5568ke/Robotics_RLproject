@@ -2,5 +2,5 @@
  roslaunch turtlebot3_gazebo football_world.launch
  roslaunch ball_pose get_ball_pose.launch
  roslaunch ball_pose shoot_ball.launch
-
+ roslaunch robot_train robot_move.launch
 
