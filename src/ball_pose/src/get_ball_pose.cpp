@@ -12,6 +12,7 @@ class MyNode {
       int model_index = -1;
       for (int i = 0; i < msg->name.size(); i++) {
         if (msg->name[i] == "unit_sphere") {
+        // if (msg->name[i] == "turtlebot3_burger") {
           model_index = i;
           break;
         }

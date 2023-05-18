@@ -235,6 +235,7 @@ gtest/googletest/clean: gtest/googletest/CMakeFiles/gtest.dir/clean
 # Directory level rules for directory robot_train
 
 # Recursive "all" directory target.
+robot_train/all: robot_train/CMakeFiles/robot_training.dir/all
 robot_train/all: robot_train/CMakeFiles/robot_move.dir/all
 
 .PHONY : robot_train/all
@@ -245,6 +246,7 @@ robot_train/preinstall:
 .PHONY : robot_train/preinstall
 
 # Recursive "clean" directory target.
+robot_train/clean: robot_train/CMakeFiles/robot_training.dir/clean
 robot_train/clean: robot_train/CMakeFiles/robot_move.dir/clean
 
 .PHONY : robot_train/clean
@@ -2265,7 +2267,7 @@ ball_pose/CMakeFiles/actionlib_msgs_generate_messages_lisp.dir/clean:
 ball_pose/CMakeFiles/shoot_ball.dir/all:
 	$(MAKE) -f ball_pose/CMakeFiles/shoot_ball.dir/build.make ball_pose/CMakeFiles/shoot_ball.dir/depend
 	$(MAKE) -f ball_pose/CMakeFiles/shoot_ball.dir/build.make ball_pose/CMakeFiles/shoot_ball.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=13,14 "Built target shoot_ball"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=15,16 "Built target shoot_ball"
 .PHONY : ball_pose/CMakeFiles/shoot_ball.dir/all
 
 # Build rule for subdir invocation for target.
@@ -2446,6 +2448,33 @@ gazebo_msgs_generate_messages_eus: ball_pose/CMakeFiles/gazebo_msgs_generate_mes
 ball_pose/CMakeFiles/gazebo_msgs_generate_messages_eus.dir/clean:
 	$(MAKE) -f ball_pose/CMakeFiles/gazebo_msgs_generate_messages_eus.dir/build.make ball_pose/CMakeFiles/gazebo_msgs_generate_messages_eus.dir/clean
 .PHONY : ball_pose/CMakeFiles/gazebo_msgs_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target robot_train/CMakeFiles/robot_training.dir
+
+# All Build rule for target.
+robot_train/CMakeFiles/robot_training.dir/all:
+	$(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/depend
+	$(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=13,14 "Built target robot_training"
+.PHONY : robot_train/CMakeFiles/robot_training.dir/all
+
+# Build rule for subdir invocation for target.
+robot_train/CMakeFiles/robot_training.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot_train/CMakeFiles/robot_training.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles 0
+.PHONY : robot_train/CMakeFiles/robot_training.dir/rule
+
+# Convenience name for target.
+robot_training: robot_train/CMakeFiles/robot_training.dir/rule
+
+.PHONY : robot_training
+
+# clean rule for target.
+robot_train/CMakeFiles/robot_training.dir/clean:
+	$(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/clean
+.PHONY : robot_train/CMakeFiles/robot_training.dir/clean
 
 #=============================================================================
 # Target rules for target robot_train/CMakeFiles/robot_move.dir
@@ -2805,7 +2834,7 @@ turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/all: 
 turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/all: turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_msgs_generate_messages_lisp.dir/all
 	$(MAKE) -f turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/build.make turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/depend
 	$(MAKE) -f turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/build.make turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=17,18 "Built target turtlebot3_fake_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=19,20 "Built target turtlebot3_fake_node"
 .PHONY : turtlebot3_simulations/turtlebot3_fake/CMakeFiles/turtlebot3_fake_node.dir/all
 
 # Build rule for subdir invocation for target.
@@ -2903,7 +2932,7 @@ turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/all: tu
 turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/all: turtlebot3_simulations/turtlebot3_fake/CMakeFiles/nav_msgs_generate_messages_py.dir/all
 	$(MAKE) -f turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/build.make turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/depend
 	$(MAKE) -f turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/build.make turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=15,16 "Built target turtlebot3_drive"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/CMakeFiles --progress-num=17,18 "Built target turtlebot3_drive"
 .PHONY : turtlebot3_simulations/turtlebot3_gazebo/CMakeFiles/turtlebot3_drive.dir/all
 
 # Build rule for subdir invocation for target.

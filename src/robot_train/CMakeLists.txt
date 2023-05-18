@@ -122,6 +122,11 @@ include_directories(
 add_executable(robot_move src/robot_move.cpp)
 target_link_libraries(robot_move ${catkin_LIBRARIES})
 
+add_executable(robot_training 
+        src/ros_Q_learning.cpp
+        src/Q_learning.h
+)
+target_link_libraries(robot_training ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/robot_train.cpp

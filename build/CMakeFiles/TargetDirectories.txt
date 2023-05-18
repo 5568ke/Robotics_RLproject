@@ -126,6 +126,7 @@
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/CMakeFiles/rebuild_cache.dir
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/CMakeFiles/edit_cache.dir
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/CMakeFiles/test.dir
+/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/CMakeFiles/robot_training.dir
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/robot_train/CMakeFiles/robot_move.dir
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/turtlebot3_simulations/turtlebot3_fake/CMakeFiles/install/strip.dir
 /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build/turtlebot3_simulations/turtlebot3_fake/CMakeFiles/install/local.dir

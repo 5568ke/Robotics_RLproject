@@ -168,6 +168,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+robot_train/CMakeFiles/robot_training.dir/rule:
+	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 robot_train/CMakeFiles/robot_training.dir/rule
+.PHONY : robot_train/CMakeFiles/robot_training.dir/rule
+
+# Convenience name for target.
+robot_training: robot_train/CMakeFiles/robot_training.dir/rule
+
+.PHONY : robot_training
+
+# fast build rule for target.
+robot_training/fast:
+	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/build
+.PHONY : robot_training/fast
+
+# Convenience name for target.
 robot_train/CMakeFiles/robot_move.dir/rule:
 	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f CMakeFiles/Makefile2 robot_train/CMakeFiles/robot_move.dir/rule
 .PHONY : robot_train/CMakeFiles/robot_move.dir/rule
@@ -209,6 +224,33 @@ src/robot_move.cpp.s:
 	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f robot_train/CMakeFiles/robot_move.dir/build.make robot_train/CMakeFiles/robot_move.dir/src/robot_move.cpp.s
 .PHONY : src/robot_move.cpp.s
 
+src/ros_Q_learning.o: src/ros_Q_learning.cpp.o
+
+.PHONY : src/ros_Q_learning.o
+
+# target to build an object file
+src/ros_Q_learning.cpp.o:
+	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o
+.PHONY : src/ros_Q_learning.cpp.o
+
+src/ros_Q_learning.i: src/ros_Q_learning.cpp.i
+
+.PHONY : src/ros_Q_learning.i
+
+# target to preprocess a source file
+src/ros_Q_learning.cpp.i:
+	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.i
+.PHONY : src/ros_Q_learning.cpp.i
+
+src/ros_Q_learning.s: src/ros_Q_learning.cpp.s
+
+.PHONY : src/ros_Q_learning.s
+
+# target to generate assembly for a file
+src/ros_Q_learning.cpp.s:
+	cd /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/build && $(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.s
+.PHONY : src/ros_Q_learning.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -222,10 +264,14 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test"
+	@echo "... robot_training"
 	@echo "... robot_move"
 	@echo "... src/robot_move.o"
 	@echo "... src/robot_move.i"
 	@echo "... src/robot_move.s"
+	@echo "... src/ros_Q_learning.o"
+	@echo "... src/ros_Q_learning.i"
+	@echo "... src/ros_Q_learning.s"
 .PHONY : help
 
 

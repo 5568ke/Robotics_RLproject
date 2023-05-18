@@ -1195,6 +1195,19 @@ gazebo_msgs_generate_messages_eus/fast:
 .PHONY : gazebo_msgs_generate_messages_eus/fast
 
 #=============================================================================
+# Target rules for targets named robot_training
+
+# Build rule for target.
+robot_training: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 robot_training
+.PHONY : robot_training
+
+# fast build rule for target.
+robot_training/fast:
+	$(MAKE) -f robot_train/CMakeFiles/robot_training.dir/build.make robot_train/CMakeFiles/robot_training.dir/build
+.PHONY : robot_training/fast
+
+#=============================================================================
 # Target rules for targets named robot_move
 
 # Build rule for target.
@@ -1455,6 +1468,7 @@ help:
 	@echo "... geometry_msgs_generate_messages_nodejs"
 	@echo "... dynamic_reconfigure_generate_messages_eus"
 	@echo "... gazebo_msgs_generate_messages_eus"
+	@echo "... robot_training"
 	@echo "... robot_move"
 	@echo "... nav_msgs_generate_messages_eus"
 	@echo "... nav_msgs_generate_messages_cpp"

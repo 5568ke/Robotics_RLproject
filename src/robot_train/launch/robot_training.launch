@@ -1,0 +1,4 @@
+<launch>
+  <node name="robot_training" pkg="robot_train" type="robot_training" output="screen">
+  </node>
+</launch>
