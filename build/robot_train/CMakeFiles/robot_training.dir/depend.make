@@ -3,12 +3,20 @@
 
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/robot_train/src/Q_learning.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/robot_train/src/ros_Q_learning.cpp
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/ApplyBodyWrench.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/ApplyBodyWrenchRequest.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/ApplyBodyWrenchResponse.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/ModelState.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/ModelStates.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/SetModelState.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/SetModelStateRequest.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/gazebo_msgs/SetModelStateResponse.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Point.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Pose.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Quaternion.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Twist.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Vector3.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/geometry_msgs/Wrench.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/ros/advertise_options.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/ros/advertise_service_options.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/ros/assert.h
@@ -65,6 +73,10 @@ robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noe
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/ros/wall_timer.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/ros/wall_timer_options.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/rosconsole/macros_generated.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/std_msgs/Float64.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/std_srvs/Empty.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/std_srvs/EmptyRequest.h
+robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/std_srvs/EmptyResponse.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/xmlrpcpp/XmlRpcDecl.h
 robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o: /opt/ros/noetic/include/xmlrpcpp/XmlRpcValue.h
 

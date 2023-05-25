@@ -15,7 +15,7 @@
 #include <mutex>
 
 float x_origin{},y_origin{};
-float x_target{-7.f},y_target{};
+float x_target{-8.f},y_target{};
 std::mutex m_;
 void shoot_ball(ros::NodeHandle& );
 void set_y_origin(const gazebo_msgs::ModelStates::ConstPtr& );
@@ -31,12 +31,12 @@ int main(int argc, char** argv)
 
   while(1){
     //一輪射門要做的事
-    ros::spinOnce();
+    // ros::spinOnce();
 
     //射門
     shoot_ball(nh);
-    pubMsg.data = x_target;
-    ball_predict_pos.publish(pubMsg);
+    // pubMsg.data = x_target;
+    // ball_predict_pos.publish(pubMsg);
 
     //block直到邊界條件 , 還沒寫好所以先用sleep
     std::this_thread::sleep_for(std::chrono::seconds(3));

@@ -102,7 +102,7 @@ pair<Action, double> choose_action(int , State , double );
 void q_learning_step(int , double , double );
 
 // Function to simulate the robot goalkeeper and compute the total reward for an episode
-double simulate_episode(int , double , double , double , int , double ,BallNode& ,BotNode&);
+double simulate_episode(int , double , double , double , int , double ,BallNode& ,BotNode&,ros::NodeHandle&);
 
 // initial Q
 void init_Q(int);

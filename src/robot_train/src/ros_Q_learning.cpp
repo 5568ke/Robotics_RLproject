@@ -6,10 +6,100 @@
 #include <cmath>
 #include <ctime>
 #include <chrono>
+#include <memory>
+#include <ros/ros.h>
+#include <chrono>
+#include <utility>
+#include <gazebo_msgs/ApplyBodyWrench.h>
+#include <gazebo_msgs/ModelStates.h>
+#include <gazebo_msgs/SetModelState.h>
+#include <geometry_msgs/Wrench.h>
+#include <std_srvs/Empty.h>
+#include <std_msgs/Float64.h>
+#include <iostream>
+#include <time.h>
+#include <mutex>
+#include "Q_learning.h"
+#include <geometry_msgs/Pose.h>
+
 #define M_PI 3.14159265358979323846
 using namespace std;
-#include "Q_learning.h"
 
+void cmd_vel_pubish(float velocity/*,ros::NodeHandle& nh*/){
+    std::cout<<"fk"<<std::endl;
+    ros::NodeHandle nh;
+    ros::Rate loop_rate(10);
+    ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 10,1);
+    std_msgs::Float64 vel;
+    vel.data=velocity;
+    cmd_vel_pub.publish(vel);
+    loop_rate.sleep(); 
+
+    // while(ros::ok()){
+    //   geometry_msgs::Twist cmd_vel;
+    //   std::cout<<"velocity : "<<velocity<<std::endl;
+    //   cmd_vel.linear.x = velocity;
+    //   cmd_vel_pub.publish(cmd_vel);
+    // }
+}
+
+void cmd_reset_pubish(float a){
+
+  ros::NodeHandle nh;
+
+  // Create a publisher to publish the model state
+  ros::Publisher modelStatePub = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10);
+
+  // Create a service client to reset the model state
+  ros::ServiceClient modelStateClient = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+
+  // Create a model state message
+  gazebo_msgs::ModelState modelState;
+  modelState.model_name = "turtlebot3_burger";  // Set the model name to reset
+
+  // Set the desired position for the model
+  modelState.pose.position.x = a;  // Set the desired X position
+  modelState.pose.position.y = 0.0;  // Set the desired Y position
+  modelState.pose.position.z = 0.0;  // Set the desired Z position
+
+//   Set other desired attributes of the model state if needed
+  modelState.pose.orientation.x = 0;
+  modelState.pose.orientation.y = 0;
+  modelState.pose.orientation.z = 0;
+  modelState.pose.orientation.w = 1;
+
+  // Publish the initial model state
+  modelStatePub.publish(modelState);
+
+  // Wait for the model state to be set
+  ros::Duration(1.0).sleep();
+}
+
+float reward_decide(float x, float y, bool flag){
+    if(-10.0<=x<=-7.5&&-2.2<=y<=2.2){
+        if(flag){    
+            float r = -10; 
+            return r;
+        }else{
+            float r = -1; 
+            return r;
+        }
+    }else if(flag){
+        float r = 1;
+        return r;
+    }else{
+        float r = -0.001;
+        return r;
+    }
+}
+
+bool collision_detect(BotNode bot_node,float x_next,float y_next){
+    float dis = sqrt(pow((bot_node.x-x_next),2)+pow((bot_node.y-y_next),2));
+    if(dis<=0.3){
+        return 1;
+    }
+    return 0;
+}
 
 
 // Global 
@@ -18,15 +108,21 @@ vector<vector<double>> Reward;
 vector<vector<double>> Q_utility;
 int num_actions = 5;
 int Q_w_length =4;
+float x_origin{1.685f},y_origin{-0.2f};
+float x_target{-8.f},y_target{};
+
+void shoot_ball(ros::NodeHandle& );
+void set_ball_pos_to_origin(ros::NodeHandle& );
+void set_robot_to_origin(ros::NodeHandle& );
 
 
 int main(int argc, char** argv) {
     // Set hyperparameters
-    double epsilon = 0.35;
+    double epsilon = 0.25;
     double alpha = 0.5;
     double gamma = 0.95;
-    int Episode = 2;
-    int num_states = 66;
+    int Episode = 100;
+    int num_states = 1000;
     double b = -2.0;
 
     // Initialize Q and Reward
@@ -35,8 +131,10 @@ int main(int argc, char** argv) {
     init_Q_utility(Episode, num_states);
 
     ros::init(argc, argv, "my_node");
+    ros::NodeHandle nh;
     BotNode bot_node;
     BallNode ball_node;
+
     std::thread t([](){
         ros::spin();
     });
@@ -44,7 +142,8 @@ int main(int argc, char** argv) {
     // Train Q for episodes, each episode takes num_states to learn
     vector<double> Total(Episode);
     for (int i = 0; i < Episode; i++) { 
-        Total[i] = simulate_episode(i, epsilon, alpha, gamma, num_states, b,ball_node,bot_node);
+        cout<< "123"<<endl;
+        Total[i] = simulate_episode(i, epsilon, alpha, gamma, num_states, b,ball_node,bot_node,nh);
         cout << "Episode " << i << " Total Reward: " << Total[i] << endl;
         cout <<"=================================="<<endl;
     }
@@ -83,7 +182,7 @@ void init_Q(int episode) {
     cout<<"Start init_Q"<<endl;
     Q_w = vector<vector<double>>(episode, vector<double>(Q_w_length));
     for (int j =0;j<Q_w_length;j++){
-        Q_w[1][j] = 0.0;
+        Q_w[1][j] = 5;
     }
     cout<<"Done init_Q"<<endl;
 }
@@ -163,10 +262,12 @@ void q_learning_step(int episode, double alpha, double Q_utility) {
 }
 
 // Function to simulate the robot goalkeeper and compute the total reward for an episode
-double simulate_episode(int episode, double epsilon, double alpha, double gamma, int num_states, double b,BallNode& ball_node,BotNode& bot_node) {
+double simulate_episode(int episode, double epsilon, double alpha, double gamma, int num_states, double b,BallNode& ball_node,BotNode& bot_node,
+                        ros::NodeHandle& nh) {
     cout<<"Episode "<<episode<<endl;
     cout <<"----------------------------------"<<endl;
     // get state s
+    shoot_ball(nh);
     float x_now = ball_node.x;
     float y_now = ball_node.y;
     float x_next{},y_next{};
@@ -181,11 +282,10 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
     float bot_y = bot_node.y;
     cout<<"x_now:"<<x_now<<"   x_next:"<<x_next<<endl;
     cout<<"y_now:"<<y_now<<"   y_next:"<<y_next<<endl;
-    float s_1 = (bot_x-x_now)/(x_now-x_next);
-    float s_2 = (bot_y-y_now)/(y_now-y_next);
-    State s = {s_1, s_2};
+    State s = {(bot_x-x_now)/(x_now-x_next), (bot_y-y_now)/(y_now-y_next)};
     //initial parameter for compute
     double accumalate_loss = 0.0;
+    bool flag_collision =0;
     for (int t = 0; t < num_states; t++) {    // episode length
         cout << "  num_states:  " << t <<endl;
         cout<<endl;
@@ -197,14 +297,10 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         double Q_value = a_Q.second;
         cout <<"      a velocity:"<< (a.velocity-2)*0.5<<endl;
         cout <<"      Q value:"<<Q_value<<endl<<endl;
+        // Do Action by a
+        cmd_vel_pubish((a.velocity-2)*0.5/*,nh*/);
+
         // Get r based on block success/failure
-        double r = -0.01;
-        cout <<"    r:"<< r <<endl;
-        cout<<endl;
-        //Get s'
-        float x_now = ball_node.x;
-        float y_now = ball_node.y;
-        float x_next{},y_next{};
         while(1){
             if(ball_node.x!=x_now && ball_node.y!=y_now){
                 x_next=ball_node.x;
@@ -212,20 +308,36 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
                 break;
             }
         }
-        float bot_x = bot_node.x;
-        float bot_y = bot_node.y;
+        //Collision detect
+        if(collision_detect(bot_node, x_next, y_next)){
+            flag_collision = 1;
+        }
+        //Get reward
+        float r = reward_decide(x_next,y_next,flag_collision);
+        cout <<"    r:"<< r <<endl;
+        cout<<endl;
+        //Get s'
+        x_now = ball_node.x;
+        y_now = ball_node.y;
+        while(1){
+            if(ball_node.x!=x_now && ball_node.y!=y_now){
+                x_next=ball_node.x;
+                y_next=ball_node.y;
+                break;
+            }
+        }
+        bot_x = bot_node.x;
+        bot_y = bot_node.y;
         cout<<"x_now:"<<x_now<<"   x_next:"<<x_next<<endl;
         cout<<"y_now:"<<y_now<<"   y_next:"<<y_next<<endl;
-        float s_prime_1 = (bot_x-x_now)/(x_now-x_next);
-        float s_prime_2 = (bot_y-y_now)/(y_now-y_next);
-        State s_prime = {s_prime_1, s_prime_2};
+        State s_prime = {(bot_x-x_now)/(x_now-x_next), (bot_y-y_now)/(y_now-y_next)};
         cout <<"    state_prime distence:   "<< s_prime.d<<endl;
         cout <<"    state_prime time:       "<< s_prime.time<<endl;
         //Get Q' and a' by max Q(s',a')
         pair<Action, double> a_Q_prime = choose_action(episode, s, epsilon);
         Action a_prime = a_Q_prime.first;
         double Q_value_prime = a_Q_prime.second;
-        cout <<"      a' velocity:"<< (a_prime.velocity-2)*0.5<<endl;
+        cout <<"      a' velocity:"<< (a_prime.velocity-2)*0.1<<endl;
         cout <<"      Q' value:"<<Q_value_prime<<endl;
         cout<<endl;
         
@@ -237,10 +349,116 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         q_learning_step(episode, alpha, Q_utility[episode][t]);
         
         s=s_prime;
+        cout<<"flag_collision"<<flag_collision<<endl;
         cout <<"----------------------------------"<<endl;
+        if ((flag_collision)||(-10.0<x_next && x_next<-7.5 && -2.2<y_next && y_next<2.2)){
+            std::cout<<"setsetsetsetset"<<std::endl;
+            set_ball_pos_to_origin(nh);
+            // set_robot_to_origin(nh);
+            //cmd_reset_pubish(-6.5f);
+            break;
+        }
     }
     for (int j =0;j<Q_w_length;j++){
         Q_w[episode+1][j] = Q_w[episode][j];
     }
     return accumalate_loss;
+}
+
+void shoot_ball(ros::NodeHandle& nh){
+  srand(time(NULL));
+  x_target=-7.5f;
+  y_target=rand()%3-1.5f;
+  std::pair<float,float> velocity(x_target - x_origin , y_target - y_origin);
+  float magnitude{ std::sqrt(pow(velocity.first,2)+pow(velocity.second,2))*3.f};
+  velocity.first /= magnitude;
+  velocity.second /= magnitude;
+  ros::ServiceClient client = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
+  gazebo_msgs::ApplyBodyWrench srv;
+  srv.request.body_name = "unit_sphere::link";  
+  srv.request.reference_frame = "world";  
+  srv.request.wrench.force.x = velocity.first;   
+  srv.request.wrench.force.y = velocity.second;  
+  srv.request.wrench.force.z = 0; 
+  ROS_INFO("x : %f " ,velocity.first);
+  ROS_INFO("y : %f ", velocity.second);
+  srv.request.start_time = ros::Time::now();
+  srv.request.duration = ros::Duration(0.002f); 
+  client.call(srv);
+}
+
+
+
+void set_ball_pos_to_origin(ros::NodeHandle& nh){
+
+  geometry_msgs::Twist model_twist;
+  geometry_msgs::Pose start_pose;
+  x_origin=0.f;
+  y_origin=rand()%8-4.f;
+  start_pose.position.x = x_origin;
+  start_pose.position.y = y_origin;
+  start_pose.position.z = 0.0;
+  start_pose.orientation.x = 0.0;
+  start_pose.orientation.y = 0.0;
+  start_pose.orientation.z = 0.0;
+  start_pose.orientation.w = 0.0;
+
+  geometry_msgs::Twist start_twist;
+  start_twist.linear.x = 0.0;
+  start_twist.linear.y = 0.0;
+  start_twist.linear.z = 0.0;
+  start_twist.angular.x = 0.0;
+  start_twist.angular.y = 0.0;
+  start_twist.angular.z = 0.0;
+
+  gazebo_msgs::ModelState modelstate;
+  modelstate.model_name = "unit_sphere";
+  modelstate.reference_frame = "world";
+  modelstate.pose = start_pose;
+  modelstate.twist = start_twist;
+
+  ros::ServiceClient client = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+  gazebo_msgs::SetModelState setmodelstate;
+  setmodelstate.request.model_state = modelstate;
+  client.call(setmodelstate);
+}
+
+
+void set_robot_to_origin(ros::NodeHandle& nh){
+
+  geometry_msgs::Twist model_twist;
+  geometry_msgs::Pose start_pose;
+  x_origin=-6.5f;
+  y_origin=-10;
+  start_pose.position.x = x_origin;
+  start_pose.position.y = y_origin;
+  start_pose.position.z = 0.0;
+  start_pose.orientation.x = 0.0;
+  start_pose.orientation.y = 0.0;
+  start_pose.orientation.z = 0.0;
+  start_pose.orientation.w = 0.0;
+
+  gazebo_msgs::ModelState modelstate;
+  modelstate.model_name = "turtlebot3_burger";
+  modelstate.reference_frame = "world";
+  modelstate.pose = start_pose;
+
+  ros::ServiceClient client = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+  gazebo_msgs::SetModelState setmodelstate;
+  setmodelstate.request.model_state = modelstate;
+  client.call(setmodelstate);
+
+    // ros::Publisher pub = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10);
+    // gazebo_msgs::ModelState msg;
+    // msg.model_name = "turtlebot3_burger";  // Replace with the name of your TurtleBot3 model in Gazebo
+    // msg.pose.position.x = -6.5f;  // Set the x-coordinate of the position
+    // msg.pose.position.y = 0.0;  // Set the y-coordinate of the position
+    // msg.pose.position.z = 0.0;  // Set the z-coordinate of the position
+
+    // msg.pose.orientation.x = 0.0;  // Set the x-component of the orientation quaternion
+    // msg.pose.orientation.y = 0.0;  // Set the y-component of the orientation quaternion
+    // msg.pose.orientation.z = 0.0;  // Set the z-component of the orientation quaternion
+    // msg.pose.orientation.w = 1.0;  // Set the w-component of the orientation quaternion
+    // pub.publish(msg);
+    // ros::Duration(1.0).sleep();  // Delay for 1 second
 }

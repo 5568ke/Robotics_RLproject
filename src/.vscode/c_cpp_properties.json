@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/ball_pose/include/**",
+        "/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/robot_train/include/**",
+        "/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+        "/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
