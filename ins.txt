@@ -4,3 +4,7 @@
  roslaunch ball_pose shoot_ball.launch
  roslaunch robot_train robot_move.launch
 
+# turtlebot3模型位置
+ /opt/ros/noetic/share/turtlebot3_description/urdf
+
+

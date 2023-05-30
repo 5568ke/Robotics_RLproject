@@ -32,7 +32,6 @@ int main(int argc, char** argv)
 
 
 void callback(const std_msgs::Float64 vel){
-  std::cout<<"get vel";
   velocity=vel.data;
 }
 
