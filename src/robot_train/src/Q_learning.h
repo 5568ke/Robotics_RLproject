@@ -84,38 +84,27 @@ private:
     ros::Subscriber model_states_sub_;
 };
 
-/*
+
 // State definition
 struct State {
 public:
     State(double Ball_x,double Robot_y)
     {
-        time=abs(-7.5-Ball_x)/ball_x_vel;
-        d=
+        time=abs((-7.5-Ball_x)/ball_x_vel);
+        d=predict_point_y_pos-Robot_y;
     }
-
     double d;   //  distance of robot's position to locus
     double time;    // time to reach locus
     static double ball_x_vel; //ball's x-axis velocity , use this to calculate time
-    static double ball
-    void PrintMe(){
-        std::cout<<" time : "<<time<<std::endl;
-        std::cout<<" distance to predict point : "<<d<<std::endl;
-    }
-};
-*/
+    static double predict_point_y_pos;
 
-// State definition
-struct State {
-public:
-    double d;   //  distance of robot's position to locus
-    double ball_x;
-    double time;    // time to reach locus
     void PrintMe(){
         std::cout<<" time : "<<time<<std::endl;
         std::cout<<" distance to predict point : "<<d<<std::endl;
     }
 };
+
+
 
 // Action definition
 struct Action {

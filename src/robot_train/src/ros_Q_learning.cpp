@@ -48,7 +48,8 @@ int num_actions = 5;
 int Q_w_length =4;
 float x_origin{1.685f},y_origin{-0.2f};
 float x_target{-8.f},y_target{};
-
+double State::ball_x_vel = 0;
+double State::predict_point_y_pos=0;
 
 
 int main(int argc, char** argv) {
@@ -111,6 +112,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+
 // Function to simulate the robot goalkeeper and compute the total reward for an episode
 double simulate_episode(int episode, double epsilon, double alpha, double gamma, int num_states, double b,BallNode& ball_node,BotNode& bot_node,
                         ros::NodeHandle& nh) {
@@ -119,28 +121,13 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
 
     //episode start -> shoot ball
     shoot_ball(nh);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
-
-
-    // got state info
-    float x_now = ball_node.x;
-    float y_now = ball_node.y;
+    //calculate some static state data and init
+    double prev_ball_x{ball_node.x};
+    std::this_thread::sleep_for(std::chrono::milliseconds(300)); 
+    double ball_x{ball_node.x};
+    State::ball_x_vel = (ball_x-prev_ball_x)/0.3f;
+    State::predict_point_y_pos=y_target;
     
-    float x_next{},y_next{};
-    while(1){
-      if(ball_node.x!=x_now && ball_node.y!=y_now){
-        x_next=ball_node.x;
-        y_next=ball_node.y;
-        break;
-      }
-    }
-    float bot_x = bot_node.x;
-    float bot_y = bot_node.y;
-    // cout<<"x_now:"<<x_now<<"   x_next:"<<x_next<<endl;
-    // cout<<"y_now:"<<y_now<<"   y_next:"<<y_next<<endl;
-    State s = {(y_next-y_now)*1/2-(bot_y-y_now), abs(bot_x-x_now)/abs(x_next-x_now),abs(y_next-y_now)};
-    ///////////////////////////////////////
-
 
     //initial parameter for compute
     double accumalate_loss = 0.0;
@@ -148,6 +135,7 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
     for (int t = 0; t < num_states; t++) {  
 
         //print num_state info
+        State s{ball_node.x,bot_node.y};
         cout << "  num_states:  " << t <<endl;
         cout<<endl;
         s.PrintMe();
@@ -169,34 +157,15 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         
 
         // Get r based on block success/failure
-        while(1){
-            if(ball_node.x!=x_now && ball_node.y!=y_now){
-                x_next=ball_node.x;
-                y_next=ball_node.y;
-                break;
-            }
-        }
-        if(collision_detect(bot_node, x_next, y_next))
+        if(collision_detect(bot_node,ball_node.x,ball_node.y))
             flag_collision = 1;
-        float r = reward_decide(x_next,y_next,flag_collision);
+        float r = reward_decide(ball_node.x,ball_node.y,flag_collision);
         cout <<"    r:"<< r <<endl;
         //////////////////////////////////////////////////////
 
 
         //Get s'
-        x_now = ball_node.x;
-        y_now = ball_node.y;
-        while(1){
-            if(ball_node.x!=x_now && ball_node.y!=y_now){
-                x_next=ball_node.x;
-                y_next=ball_node.y;
-                break;
-            }
-        }
-        bot_x = bot_node.x;
-        bot_y = bot_node.y;
-        State s_prime = {(y_next-y_now)*1/2-(bot_y-y_now), abs(bot_x-x_now)/abs(x_next-x_now),abs(y_next-y_now)};
-
+        State s_prime{ball_node.x,bot_node.y};
 
         //Get Q' and a' by max Q(s',a')
         pair<Action, double> a_Q_prime = choose_action(episode, s, epsilon);
@@ -225,8 +194,8 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         s=s_prime;
         cout<<"flag_collision"<<flag_collision<<endl;
         cout <<"----------------------------------"<<endl;
-        if ((flag_collision)||(-10.0<x_next && x_next<-7.5 && -2.2<y_next && y_next<2.2)){
-            std::cout<<"setsetsetsetset"<<std::endl;
+        if ((flag_collision)||(-10.0<ball_node.x && ball_node.x<-7.5 && -2.2<ball_node.y&& ball_node.y<2.2)){
+            std::cout<<"Meet boundary conditions, start new episode"<<std::endl;
             set_robot_to_origin(nh);
             //std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
             set_ball_pos_to_origin(nh);
@@ -282,7 +251,7 @@ pair<Action, double> choose_action(int episode, State s, double epsilon) {
 }
 
 double q_function(int episode, State s,int i){
-    return Q_w[episode][0]+Q_w[episode][1]*((s.d)*(i-3))+0*Q_w[episode][2]*s.time;
+    return /*Q_w[episode][0] +*/ Q_w[episode][1]*((s.d)*(i-3)) /*+ 0*Q_w[episode][2]*s.time*/;
 }
 
 // Function to update Q_w
