@@ -27,23 +27,23 @@ using namespace std;
 
 // function declaration
 void cmd_vel_pubish(float);
-float reward_decide(float , float, bool);
+float reward_decide(float , float, bool,State);
 bool collision_detect(BotNode,float ,float );
 void shoot_ball(ros::NodeHandle&);
 void set_ball_pos_to_origin(ros::NodeHandle&);
 void set_robot_to_origin(ros::NodeHandle&);
 void init_Q(int);
 void init_Reward(int,int);
-void init_Q_utility(int,int);
+void init_Q_utility(int,int,int);
 double q_function(int,State,int);
 void q_learning_step(int,double,double,int );
 double simulate_episode(int, double , double , double , int , double ,BallNode& ,BotNode& ,ros::NodeHandle& );
-
+float sigmoid (float);
 
 // Global 
 vector<vector<double>> Q_w;
 vector<vector<double>> Reward;
-vector<vector<double>> Q_utility;
+vector<vector<vector<double>>> Q_utility;
 int num_actions = 5;
 int Q_w_length =4;
 float x_origin{1.685f},y_origin{-0.2f};
@@ -57,14 +57,14 @@ int main(int argc, char** argv) {
     double epsilon = 0.45;
     double alpha = 0.3;
     double gamma = 0.8;
-    int Episode = 300;
+    int Episode = 100;
     int num_states = 30;
     double b = -2.0;
 
     // Initialize Q and Reward
     init_Q(Episode+1);
     init_Reward(Episode, num_states);
-    init_Q_utility(Episode, num_states);
+    init_Q_utility(Episode, num_states, Q_w_length);
 
     ros::init(argc, argv, "my_node");
     ros::NodeHandle nh;
@@ -91,23 +91,23 @@ int main(int argc, char** argv) {
     cout <<"----------------------------------"<<endl;
 
     // Print all Q_utility
-    for (int i = 0; i < Episode; i++) { 
-        cout << "Q_utility: Episode " << i<<endl;
-        for (int j = 0; j < num_states; j++) {
-            cout << Q_utility[i][j] << " ";
-        }
-        cout<<endl;
-    }
-    cout <<"----------------------------------"<<endl;
+    // for (int i = 0; i < Episode; i++) { 
+    //     cout << "Q_utility: Episode " << i<<endl;
+    //     for (int j = 0; j < num_states; j++) {
+    //         cout << Q_utility[i][j] << " ";
+    //     }
+    //     cout<<endl;
+    // }
+    // cout <<"----------------------------------"<<endl;
 
     // Print all Q
-    cout << "All Episode Q_w:" << endl;
-    for (int i = 0; i <Episode; i++) {
-        for (int j =0;j<Q_w_length;j++){
-            cout << Q_w[i][j] << " ";
-        }
-        cout << endl;
-    }
+    // cout << "All Episode Q_w:" << endl;
+    // for (int i = 0; i <Episode; i++) {
+    //     for (int j =0;j<Q_w_length;j++){
+    //         cout << Q_w[i][j] << " ";
+    //     }
+    //     cout << endl;
+    // }
     t.join();
     return 0;
 }
@@ -139,13 +139,17 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         cout << "  num_states:  " << t <<endl;
         cout<<endl;
         s.PrintMe();
+        cout<<endl;
         ////////////////////////////////////////
 
     
         //Get Q and a by max Q(s,a), execute action
-        pair<Action, double> a_Q = choose_action(episode, s, epsilon);
+        pair<Action, double> a_Q = choose_action(episode, s, epsilon, accumalate_loss);
         Action a = a_Q.first;
-        cmd_vel_pubish((a.velocity-3)*0.5/*,nh*/);
+        cmd_vel_pubish((a.velocity-3)*(-0.5)/*,nh*/);
+        //std::cout<<"move dis :  "<<s.d-(a.velocity-3)*(0.5)*s.time<<std::endl;
+        cout <<"      action:  "<<(a.velocity-3)*(0.5)<<endl;
+        cout<<endl;
         double Q_value = a_Q.second;
         /////////////////////////////////////////////////////////////////
         
@@ -153,48 +157,56 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         //check q_value normal
         if (!std::isfinite(Q_value))
             Q_value = 100;
+
+        cout <<"      Q  value:"<<Q_value<<endl;
+        cout<<endl;
         /////////////////////////////
         
 
         // Get r based on block success/failure
         if(collision_detect(bot_node,ball_node.x,ball_node.y))
             flag_collision = 1;
-        float r = reward_decide(ball_node.x,ball_node.y,flag_collision);
-        cout <<"    r:"<< r <<endl;
+        float r = reward_decide(ball_node.x,ball_node.y,flag_collision,s);
+        // cout <<"    r:"<< r <<endl;
         //////////////////////////////////////////////////////
 
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
         //Get s'
         State s_prime{ball_node.x,bot_node.y};
-
+        cout<<endl;
+        s_prime.PrintMe();
+        cout<<endl;
         //Get Q' and a' by max Q(s',a')
-        pair<Action, double> a_Q_prime = choose_action(episode, s, epsilon);
+        pair<Action, double> a_Q_prime = choose_action(episode, s, epsilon, accumalate_loss);
         Action a_prime = a_Q_prime.first;
         double Q_value_prime = a_Q_prime.second;
-        // cout <<"      a' velocity:"<< (a_prime.velocity-2)*0.1<<endl;
         
         if (!std::isfinite(Q_value_prime))
             Q_value_prime = 100;
         
-        // cout <<"      Q' value:"<<Q_value_prime<<endl;
-        // cout<<endl;
+        cout <<"      Q' value:"<<Q_value_prime<<endl;
+        cout<<endl;
         
         //update Q_w
         Reward[episode][t] = r;
         accumalate_loss = accumalate_loss*gamma+r;
-        for (int i = 1; i < 2; i++) {
+        
+        for (int i = 0; i < Q_w_length; i++) {
             double q_value = q_function(episode,s,i);
-            Q_utility[episode][t] = accumalate_loss + gamma * Q_value_prime - q_value;
+            Q_utility[episode][t][i] = accumalate_loss + gamma * Q_value_prime - Q_value;
             // cout <<"    Q_utility value:"<<Q_utility[episode][t]<<endl<<endl;
-            q_learning_step(episode, alpha, Q_utility[episode][t],i);
+            q_learning_step(episode, alpha, Q_utility[episode][t][i],i);
         }
         
+        //Q_utility[episode][t] = accumalate_loss + gamma * Q_value_prime - Q_value;
+        //q_learning_step(episode, alpha, Q_utility[episode][t],1);
         
         
         s=s_prime;
         cout<<"flag_collision"<<flag_collision<<endl;
         cout <<"----------------------------------"<<endl;
-        if ((flag_collision)||(-10.0<ball_node.x && ball_node.x<-7.5 && -2.2<ball_node.y&& ball_node.y<2.2)){
+        if ((flag_collision)||(-10.0<ball_node.x && ball_node.x<-7.5 && -2.2<ball_node.y&& ball_node.y<2.2)||t==num_states-1){
             std::cout<<"Meet boundary conditions, start new episode"<<std::endl;
             set_robot_to_origin(nh);
             //std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
@@ -212,7 +224,7 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
 
 
 // Function to choose an action based on exploration/exploitation trade-off
-pair<Action, double> choose_action(int episode, State s, double epsilon) {
+pair<Action, double> choose_action(int episode, State s, double epsilon,double accumalate_loss) {
     // Generate a random double value
     auto time_now = chrono::high_resolution_clock::now();
     auto seed = time_now.time_since_epoch().count();
@@ -237,13 +249,16 @@ pair<Action, double> choose_action(int episode, State s, double epsilon) {
         // Exploitation: choose action with maximum Q-value
         int best_action_index = 0;
         double best_q_value = 0;
-        for (int i = 1; i < num_actions; i++) {
+        for (int i = 1; i <= num_actions; i++) {
             double q_value = q_function(episode,s,i);
+            //std::cout<<"q_value of "<<i<<" : "<<q_value<<std::endl;
             if (q_value > best_q_value) {
                 best_q_value = q_value;
                 best_action_index = i;
             }
         }
+        //std::cout<<"best action index : "<<best_action_index<<std::endl;
+        //std::cout<<"best q value : "<<best_q_value<<std::endl;
         a = {best_action_index};
         pair<Action, double> a_Q_prime(a, best_q_value);
         return a_Q_prime;
@@ -251,14 +266,12 @@ pair<Action, double> choose_action(int episode, State s, double epsilon) {
 }
 
 double q_function(int episode, State s,int i){
-    return /*Q_w[episode][0] +*/ Q_w[episode][1]*((s.d)*(i-3)) /*+ 0*Q_w[episode][2]*s.time*/;
+    return Q_w[episode][0] +Q_w[episode][1]*-(abs((s.d)-(i-3)*(0.5)*s.time)) + Q_w[episode][2]*(i-3)*(s.d);
 }
 
 // Function to update Q_w
 void q_learning_step(int episode, double alpha, double Q_utility,int i) {
-    for (int j =0;j<Q_w_length;j++){
-        Q_w[episode][j] =  Q_w[episode][j] + alpha * Q_utility;
-    }
+    Q_w[episode][i] =  Q_w[episode][i] + alpha * sigmoid(Q_utility);
     cout <<"  Q_w value:"<<endl;
     cout <<"    ";
     for (int j =0;j<Q_w_length;j++){
@@ -267,6 +280,9 @@ void q_learning_step(int episode, double alpha, double Q_utility,int i) {
     cout<<endl;
 }
 
+float sigmoid (float x) {
+    return 1 / (1 + exp(-x));
+}
 
 void shoot_ball(ros::NodeHandle& nh){
   srand(time(NULL));
@@ -289,9 +305,6 @@ void shoot_ball(ros::NodeHandle& nh){
   srv.request.duration = ros::Duration(0.002f); 
   client.call(srv);
 }
-
-
-
 void set_ball_pos_to_origin(ros::NodeHandle& nh){
   geometry_msgs::Pose start_pose1;
   x_origin=0.f;
@@ -324,7 +337,6 @@ void set_ball_pos_to_origin(ros::NodeHandle& nh){
   setmodelstate1.request.model_state = modelstate1;
   client1.call(setmodelstate1);
 }
-
 void set_robot_to_origin(ros::NodeHandle& nh){
   geometry_msgs::Twist model_twist;
   geometry_msgs::Pose start_pose;
@@ -348,7 +360,6 @@ void set_robot_to_origin(ros::NodeHandle& nh){
   setmodelstate2.request.model_state = modelstate;
   client2.call(setmodelstate2);
 }
-
 void cmd_vel_pubish(float velocity/*,ros::NodeHandle& nh*/){
     ros::NodeHandle nh;
     ros::Rate loop_rate(10);
@@ -358,25 +369,6 @@ void cmd_vel_pubish(float velocity/*,ros::NodeHandle& nh*/){
     cmd_vel_pub.publish(vel);
     loop_rate.sleep(); 
 }
-
-float reward_decide(float x, float y, bool flag){
-    if(-10.0<=x<=-7.5&&-2.2<=y<=2.2){
-        if(flag){    
-            float r = -2; 
-            return r;
-        }else{
-            float r = -20; 
-            return r;
-        }
-    }else if(flag){
-        float r = 20;
-        return r;
-    }else{
-        float r = -0.1;
-        return r;
-    }
-}
-
 bool collision_detect(BotNode bot_node,float x_next,float y_next){
     float dis = sqrt(pow((bot_node.x-x_next),2)+pow((bot_node.y-y_next),2));
     if(dis<=0.3){
@@ -384,14 +376,32 @@ bool collision_detect(BotNode bot_node,float x_next,float y_next){
     }
     return 0;
 }
+float reward_decide(float x, float y, bool flag, State s){
+    if(-10.0<=x<=-7.5&&-2.2<=y<=2.2){
+        if(flag){    
+            float r = 5; 
+            return r;
+        }else{
+            float r = -20*abs(s.d); 
+            return r;
+        }
+    }else if(flag){
+        float r = 20;
+        return r;
+    }else{
+        float r = -1;
+        return r;
+    }
+}
 
 // Function to initialize Q with random values
 void init_Q(int episode) {
     cout<<"Start init_Q"<<endl;
     Q_w = vector<vector<double>>(episode, vector<double>(Q_w_length));
-    for (int j =0;j<Q_w_length;j++){
-        Q_w[1][j] = 0.1*(j*100);
-    }
+    Q_w[1][0] = 0.1;
+    Q_w[1][1] = 0.1;
+    Q_w[1][2] = 0.1;
+    Q_w[1][3] = 0.001;
     cout<<"Done init_Q"<<endl;
 }
 
@@ -407,11 +417,13 @@ void init_Reward(int episode, int num_states) {
 }
 
 // Function to initialize Q with guess
-void init_Q_utility(int episode, int num_states) {
-    Q_utility = vector<vector<double>>(episode, vector<double>(num_states));
+void init_Q_utility(int episode, int num_states, int Q_w_length) {
+    Q_utility = vector<vector<vector<double>>>(episode, vector<vector<double>>(num_states,vector<double>(Q_w_length)));
     for (int j =0;j<episode;j++){
         for (int i = 0; i < num_states; i++) {
-            Q_utility[j][i] = 0.0;
+            for (int k=0;j<Q_w_length;j++){
+                Q_utility[j][i][k] = 0.0;
+            }
         }
     }
     cout<<"Done init_Q_utility"<<endl;

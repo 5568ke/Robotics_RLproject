@@ -93,8 +93,8 @@ public:
         time=abs((-7.5-Ball_x)/ball_x_vel);
         d=predict_point_y_pos-Robot_y;
     }
-    double d;   //  distance of robot's position to locus
-    double time;    // time to reach locus
+    double d; //  distance of robot's position to locus
+    double time; // time to reach locus
     static double ball_x_vel; //ball's x-axis velocity , use this to calculate time
     static double predict_point_y_pos;
 
@@ -112,16 +112,8 @@ struct Action {
 };
 
 // Function to choose an action using an epsilon-greedy policy
-pair<Action, double> choose_action(int , State , double );
-
-// Function to update the Q-table using the Q-learning algorithm
-void q_learning_step(int , double , double );
+pair<Action, double> choose_action(int , State , double ,double);
 
 // Function to simulate the robot goalkeeper and compute the total reward for an episode
 double simulate_episode(int , double , double , double , int , double ,BallNode& ,BotNode&,ros::NodeHandle&);
 
-// initial Q
-void init_Q(int);
-// initial Reward Q-utility
-void init_Reward(int , int );
-void init_Q_utility(int , int );
