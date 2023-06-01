@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
     double epsilon = 0.45;
     double alpha = 0.3;
     double gamma = 0.8;
-    int Episode = 100;
-    int num_states = 30;
+    int Episode = 140;
+    int num_states = 35;
     double b = -2.0;
 
     // Initialize Q and Reward
@@ -195,7 +195,7 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         for (int i = 0; i < Q_w_length; i++) {
             double q_value = q_function(episode,s,i);
             Q_utility[episode][t][i] = accumalate_loss + gamma * Q_value_prime - Q_value;
-            // cout <<"    Q_utility value:"<<Q_utility[episode][t]<<endl<<endl;
+            cout <<"    Q_utility value:"<<Q_utility[episode][t][i]<<endl<<endl;
             q_learning_step(episode, alpha, Q_utility[episode][t][i],i);
         }
         
@@ -285,11 +285,16 @@ float sigmoid (float x) {
 }
 
 void shoot_ball(ros::NodeHandle& nh){
+  static int counter=0;
   srand(time(NULL));
   x_target=-7.5f;
-  y_target=rand()%3-1.5f;
+  //y_target=rand()%3-1.5f;
+  if(counter<=110)
+    y_target=-1.5f+(counter/10)*0.3f;
+  else
+    y_target=-1.5+((counter-110)/3)*0.3f;
   std::pair<float,float> velocity(x_target - x_origin , y_target - y_origin);
-  float magnitude{ std::sqrt(pow(velocity.first,2)+pow(velocity.second,2))*6.f};
+  float magnitude{ std::sqrt(pow(velocity.first,2)+pow(velocity.second,2))*9.f};
   velocity.first /= magnitude;
   velocity.second /= magnitude;
   ros::ServiceClient client = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
@@ -304,6 +309,7 @@ void shoot_ball(ros::NodeHandle& nh){
   srv.request.start_time = ros::Time::now();
   srv.request.duration = ros::Duration(0.002f); 
   client.call(srv);
+  counter++;
 }
 void set_ball_pos_to_origin(ros::NodeHandle& nh){
   geometry_msgs::Pose start_pose1;
@@ -382,14 +388,14 @@ float reward_decide(float x, float y, bool flag, State s){
             float r = 5; 
             return r;
         }else{
-            float r = -20*abs(s.d); 
+            float r = -10*abs(s.d); 
             return r;
         }
     }else if(flag){
         float r = 20;
         return r;
     }else{
-        float r = -1;
+        float r = -0.25;
         return r;
     }
 }
