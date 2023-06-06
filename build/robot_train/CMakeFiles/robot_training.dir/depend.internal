@@ -74,7 +74,10 @@ robot_train/CMakeFiles/robot_training.dir/src/ros_Q_learning.cpp.o
  /opt/ros/noetic/include/ros/wall_timer.h
  /opt/ros/noetic/include/ros/wall_timer_options.h
  /opt/ros/noetic/include/rosconsole/macros_generated.h
+ /opt/ros/noetic/include/std_msgs/Float32MultiArray.h
  /opt/ros/noetic/include/std_msgs/Float64.h
+ /opt/ros/noetic/include/std_msgs/MultiArrayDimension.h
+ /opt/ros/noetic/include/std_msgs/MultiArrayLayout.h
  /opt/ros/noetic/include/std_srvs/Empty.h
  /opt/ros/noetic/include/std_srvs/EmptyRequest.h
  /opt/ros/noetic/include/std_srvs/EmptyResponse.h

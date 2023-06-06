@@ -8,6 +8,7 @@
 #include <chrono>
 #include <memory>
 #include <ros/ros.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <chrono>
 #include <utility>
 #include <gazebo_msgs/ApplyBodyWrench.h>
@@ -26,7 +27,7 @@
 using namespace std;
 
 // function declaration
-void cmd_vel_pubish(float);
+// void cmd_vel_pubish(float);
 float reward_decide(float , float, bool,State);
 bool collision_detect(BotNode,float ,float );
 void shoot_ball(ros::NodeHandle&);
@@ -39,6 +40,7 @@ double q_function(int,State,int);
 void q_learning_step(int,double,double,int );
 double simulate_episode(int, double , double , double , int , double ,BallNode& ,BotNode& ,ros::NodeHandle& );
 float sigmoid (float);
+// void pubish_graphic(float ,float ,float );
 
 // Global 
 vector<vector<double>> Q_w;
@@ -90,24 +92,6 @@ int main(int argc, char** argv) {
     }
     cout <<"----------------------------------"<<endl;
 
-    // Print all Q_utility
-    // for (int i = 0; i < Episode; i++) { 
-    //     cout << "Q_utility: Episode " << i<<endl;
-    //     for (int j = 0; j < num_states; j++) {
-    //         cout << Q_utility[i][j] << " ";
-    //     }
-    //     cout<<endl;
-    // }
-    // cout <<"----------------------------------"<<endl;
-
-    // Print all Q
-    // cout << "All Episode Q_w:" << endl;
-    // for (int i = 0; i <Episode; i++) {
-    //     for (int j =0;j<Q_w_length;j++){
-    //         cout << Q_w[i][j] << " ";
-    //     }
-    //     cout << endl;
-    // }
     t.join();
     return 0;
 }
@@ -146,12 +130,24 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         //Get Q and a by max Q(s,a), execute action
         pair<Action, double> a_Q = choose_action(episode, s, epsilon, accumalate_loss);
         Action a = a_Q.first;
-        cmd_vel_pubish((a.velocity-3)*(-0.5)/*,nh*/);
+        // cmd_vel_pubish((a.velocity-3)*(-0.5)/*,nh*/);
+      
+        ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 100,1);
+        ros::Publisher graphic_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic",100,1);
+        ros::Rate loop_rate(10);
+        std_msgs::Float64 vel;
+        std_msgs::Float32MultiArray msg;
+
+
+        vel.data=(a.velocity-3)*(-0.5);
+        cmd_vel_pub.publish(vel);
+
         //std::cout<<"move dis :  "<<s.d-(a.velocity-3)*(0.5)*s.time<<std::endl;
         cout <<"      action:  "<<(a.velocity-3)*(0.5)<<endl;
         cout<<endl;
         double Q_value = a_Q.second;
         /////////////////////////////////////////////////////////////////
+      
         
 
         //check q_value normal
@@ -191,6 +187,12 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         //update Q_w
         Reward[episode][t] = r;
         accumalate_loss = accumalate_loss*gamma+r;
+        // pubish_graphic(a.velocity,r,accumalate_loss);
+        // 
+        msg.data={a.velocity,r,accumalate_loss};
+        graphic_pub.publish(msg);
+        loop_rate.sleep(); 
+        
         
         for (int i = 0; i < Q_w_length; i++) {
             double q_value = q_function(episode,s,i);
@@ -366,15 +368,26 @@ void set_robot_to_origin(ros::NodeHandle& nh){
   setmodelstate2.request.model_state = modelstate;
   client2.call(setmodelstate2);
 }
-void cmd_vel_pubish(float velocity/*,ros::NodeHandle& nh*/){
-    ros::NodeHandle nh;
-    ros::Rate loop_rate(10);
-    ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 10,1);
-    std_msgs::Float64 vel;
-    vel.data=velocity;
-    cmd_vel_pub.publish(vel);
-    loop_rate.sleep(); 
-}
+// void cmd_vel_pubish(float velocity/*,ros::NodeHandle& nh*/){
+//     ros::NodeHandle nh;
+//     ros::Rate loop_rate(20);
+//     ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 10,1);
+//     std_msgs::Float64 vel;
+//     vel.data=velocity;
+//     cmd_vel_pub.publish(vel);
+//     loop_rate.sleep(); 
+// }
+
+// void pubish_graphic(float Action,float Score,float Reward){
+//     ros::NodeHandle nhg;
+//     ros::Rate loop_rate(20);
+//     ros::Publisher graphic_pub = nhg.advertise<std_msgs::Float32MultiArray>("graphic",10,1);
+//     std_msgs::Float32MultiArray msg;
+//     msg.data={Action,Score,Reward};
+//     graphic_pub.publish(msg);
+//     loop_rate.sleep(); 
+// }
+
 bool collision_detect(BotNode bot_node,float x_next,float y_next){
     float dis = sqrt(pow((bot_node.x-x_next),2)+pow((bot_node.y-y_next),2));
     if(dis<=0.3){

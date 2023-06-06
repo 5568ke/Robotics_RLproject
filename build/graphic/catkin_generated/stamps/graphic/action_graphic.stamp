@@ -43,7 +43,7 @@ class Thread(QThread):
         self.mutex = QMutex()
         self.cnt = 0
         self._status = True
-        self.sub = rospy.Subscriber("get_action", Float32MultiArray, self.get_array)
+        self.sub = rospy.Subscriber("graphic", Float32MultiArray, self.get_array)
 
     def get_array(self, array):
         data = []
