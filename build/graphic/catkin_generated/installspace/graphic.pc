@@ -1,0 +1,8 @@
+prefix=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/install
+
+Name: graphic
+Description: Description of graphic
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs

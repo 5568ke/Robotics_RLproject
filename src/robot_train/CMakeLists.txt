@@ -107,7 +107,6 @@ catkin_package(
 #  CATKIN_DEPENDS gazebo_ros roscpp
 #  DEPENDS system_lib
 )
-
 ###########
 ## Build ##
 ###########
