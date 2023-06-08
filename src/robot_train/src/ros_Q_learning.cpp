@@ -189,7 +189,7 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         accumalate_loss = accumalate_loss*gamma+r;
         // pubish_graphic(a.velocity,r,accumalate_loss);
         // 
-        msg.data={a.velocity,r,accumalate_loss};
+        msg.data={a.velocity,r-2,accumalate_loss};
         graphic_pub.publish(msg);
         loop_rate.sleep(); 
         
