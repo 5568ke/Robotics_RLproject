@@ -23,6 +23,7 @@ include_directories(
 catkin_install_python(PROGRAMS 
   bin/hello
   bin/action_graphic
+  bin/result_graphic
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 

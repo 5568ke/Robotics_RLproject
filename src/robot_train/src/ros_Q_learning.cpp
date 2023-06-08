@@ -134,9 +134,11 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
       
         ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 100,1);
         ros::Publisher graphic_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic",100,1);
+        ros::Publisher graphic_result_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic_result",100,1);
         ros::Rate loop_rate(10);
         std_msgs::Float64 vel;
         std_msgs::Float32MultiArray msg;
+        std_msgs::Float32MultiArray msg_result;
 
 
         vel.data=(a.velocity-3)*(-0.5);
@@ -189,17 +191,22 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         accumalate_loss = accumalate_loss*gamma+r;
         // pubish_graphic(a.velocity,r,accumalate_loss);
         // 
-        msg.data={a.velocity,r-2,accumalate_loss};
+        msg.data={a.velocity-2,accumalate_loss,r};
         graphic_pub.publish(msg);
-        loop_rate.sleep(); 
         
         
         for (int i = 0; i < Q_w_length; i++) {
-            double q_value = q_function(episode,s,i);
+            //double q_value = q_function(episode,s,i);
             Q_utility[episode][t][i] = accumalate_loss + gamma * Q_value_prime - Q_value;
             cout <<"    Q_utility value:"<<Q_utility[episode][t][i]<<endl<<endl;
             q_learning_step(episode, alpha, Q_utility[episode][t][i],i);
         }
+        
+        
+        msg_result.data={accumalate_loss,Q_value};
+        graphic_result_pub.publish(msg_result);
+        loop_rate.sleep(); 
+        
         
         //Q_utility[episode][t] = accumalate_loss + gamma * Q_value_prime - Q_value;
         //q_learning_step(episode, alpha, Q_utility[episode][t],1);
