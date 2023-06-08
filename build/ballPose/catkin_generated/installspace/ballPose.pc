@@ -1,8 +1,0 @@
-prefix=/home/clown911026/cs/homework/機器人專題/專題/catkin_ws/install
-
-Name: ballPose
-Description: Description of ballPose
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

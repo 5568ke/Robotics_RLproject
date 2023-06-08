@@ -1,4 +1,0 @@
-import graphic_pkg.hello
-
-if __name__ == '__main__':
-  graphic_pkg.hello.say('my friend!')

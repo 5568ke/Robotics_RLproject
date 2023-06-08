@@ -1,7 +1,0 @@
-set(graphic_SETUP_PY_SETUP_MODULE "distutils.core")
-set(graphic_SETUP_PY_VERSION "0.0.0")
-set(graphic_SETUP_PY_SCRIPTS "")
-set(graphic_SETUP_PY_PACKAGES "graphic_pkg")
-set(graphic_SETUP_PY_PACKAGE_DIRS "src/graphic_pkg")
-set(graphic_SETUP_PY_MODULES "")
-set(graphic_SETUP_PY_MODULE_DIRS "")
