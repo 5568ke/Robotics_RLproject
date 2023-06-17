@@ -28,7 +28,7 @@ using namespace std;
 
 // function declaration
 // void cmd_vel_pubish(float);
-float reward_decide(float , float, bool,State);
+float reward_decide(float , float, bool,State,int);
 bool collision_detect(BotNode,float ,float );
 void shoot_ball(ros::NodeHandle&);
 void set_ball_pos_to_origin(ros::NodeHandle&);
@@ -52,6 +52,20 @@ float x_origin{1.685f},y_origin{-0.2f};
 float x_target{-8.f},y_target{};
 double State::ball_x_vel = 0;
 double State::predict_point_y_pos=0;
+int success_count=0;
+std_msgs::Float32MultiArray msg_result;
+
+void pub_result_graph(){
+  ros::NodeHandle nh;
+  ros::Publisher graphic_result_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic_result",100,1);
+  ros::Rate loop_rate(10);
+  while(ros::ok()){
+    std::cout<<"call"<<std::endl;
+    graphic_result_pub.publish(msg_result);
+    loop_rate.sleep();
+  }
+}
+
 
 
 int main(int argc, char** argv) {
@@ -73,6 +87,9 @@ int main(int argc, char** argv) {
     BotNode bot_node;
     BallNode ball_node;
 
+    std::thread pub_result_graph_thread(pub_result_graph);
+
+   
     std::thread t([](){
         ros::spin();
     });
@@ -87,11 +104,13 @@ int main(int argc, char** argv) {
     }
 
     // Print all reward 
-    for (int i = 0; i < Episode; i++) { 
-        cout << "Episode " << i << " Total Reward: " << Total[i] << endl;
-    }
+    // for (int i = 0; i < Episode; i++) { 
+    //     cout << "Episode " << i << " Total Reward: " << Total[i] << endl;
+    // }
+    std::cout<<"succcess rate : "<<(float)success_count/30.f<<std::endl;
     cout <<"----------------------------------"<<endl;
 
+    pub_result_graph_thread.join();
     t.join();
     return 0;
 }
@@ -134,18 +153,16 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
       
         ros::Publisher cmd_vel_pub = nh.advertise<std_msgs::Float64>("action", 100,1);
         ros::Publisher graphic_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic",100,1);
-        ros::Publisher graphic_result_pub = nh.advertise<std_msgs::Float32MultiArray>("graphic_result",100,1);
         ros::Rate loop_rate(10);
         std_msgs::Float64 vel;
         std_msgs::Float32MultiArray msg;
-        std_msgs::Float32MultiArray msg_result;
 
 
         vel.data=(a.velocity-3)*(-0.5);
         cmd_vel_pub.publish(vel);
 
         //std::cout<<"move dis :  "<<s.d-(a.velocity-3)*(0.5)*s.time<<std::endl;
-        cout <<"      action:  "<<(a.velocity-3)*(0.5)<<endl;
+        // cout <<"      action:  "<<(a.velocity-3)*(0.5)<<endl;
         cout<<endl;
         double Q_value = a_Q.second;
         /////////////////////////////////////////////////////////////////
@@ -156,15 +173,15 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         if (!std::isfinite(Q_value))
             Q_value = 100;
 
-        cout <<"      Q  value:"<<Q_value<<endl;
-        cout<<endl;
+        // cout <<"      Q  value:"<<Q_value<<endl;
+        // cout<<endl;
         /////////////////////////////
         
 
         // Get r based on block success/failure
         if(collision_detect(bot_node,ball_node.x,ball_node.y))
             flag_collision = 1;
-        float r = reward_decide(ball_node.x,ball_node.y,flag_collision,s);
+        float r = reward_decide(ball_node.x,ball_node.y,flag_collision,s,episode);
         // cout <<"    r:"<< r <<endl;
         //////////////////////////////////////////////////////
 
@@ -183,8 +200,8 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         if (!std::isfinite(Q_value_prime))
             Q_value_prime = 100;
         
-        cout <<"      Q' value:"<<Q_value_prime<<endl;
-        cout<<endl;
+        // cout <<"      Q' value:"<<Q_value_prime<<endl;
+        // cout<<endl;
         
         //update Q_w
         Reward[episode][t] = r;
@@ -198,13 +215,13 @@ double simulate_episode(int episode, double epsilon, double alpha, double gamma,
         for (int i = 0; i < Q_w_length; i++) {
             //double q_value = q_function(episode,s,i);
             Q_utility[episode][t][i] = accumalate_loss + gamma * Q_value_prime - Q_value;
-            cout <<"    Q_utility value:"<<Q_utility[episode][t][i]<<endl<<endl;
+            // cout <<"    Q_utility value:"<<Q_utility[episode][t][i]<<endl<<endl;
             q_learning_step(episode, alpha, Q_utility[episode][t][i],i);
         }
         
         
         msg_result.data={accumalate_loss,Q_value};
-        graphic_result_pub.publish(msg_result);
+        // graphic_result_pub.publish(msg_result);
         loop_rate.sleep(); 
         
         
@@ -246,7 +263,7 @@ pair<Action, double> choose_action(int episode, State s, double epsilon,double a
     // Epsilon greedy
     if (random_number < epsilon) {
         // Exploration: choose a random action
-        cout<<"    >> choose random"<<endl;
+        // cout<<"    >> choose random"<<endl;
         uniform_int_distribution<int> action_distribution(0, 4);
         int action_index = action_distribution(rng);
         a = {action_index};
@@ -254,7 +271,7 @@ pair<Action, double> choose_action(int episode, State s, double epsilon,double a
         return a_Q_prime;
     }
     else {
-        cout<<"    >> choose max Q"<<endl;
+        // cout<<"    >> choose max Q"<<endl;
         // Exploitation: choose action with maximum Q-value
         int best_action_index = 0;
         double best_q_value = 0;
@@ -281,12 +298,12 @@ double q_function(int episode, State s,int i){
 // Function to update Q_w
 void q_learning_step(int episode, double alpha, double Q_utility,int i) {
     Q_w[episode][i] =  Q_w[episode][i] + alpha * sigmoid(Q_utility);
-    cout <<"  Q_w value:"<<endl;
-    cout <<"    ";
+    // cout <<"  Q_w value:"<<endl;
+    // cout <<"    ";
     for (int j =0;j<Q_w_length;j++){
-        cout << Q_w[episode][j] << " ";
+        // cout << Q_w[episode][j] << " ";
     }
-    cout<<endl;
+    // cout<<endl;
 }
 
 float sigmoid (float x) {
@@ -402,21 +419,23 @@ bool collision_detect(BotNode bot_node,float x_next,float y_next){
     }
     return 0;
 }
-float reward_decide(float x, float y, bool flag, State s){
+float reward_decide(float x, float y, bool flag, State s,int episode){
     if(-10.0<=x<=-7.5&&-2.2<=y<=2.2){
         if(flag){    
             float r = 5; 
-            return r;
+            return r/20.f;
         }else{
             float r = -10*abs(s.d); 
-            return r;
+            return r/20.f;
         }
     }else if(flag){
         float r = 20;
-        return r;
+        if(episode>=110)
+          success_count++;
+        return r/20.f;
     }else{
         float r = -0.25;
-        return r;
+        return r/20.f;
     }
 }
 
